@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-
+import imageio
 
 def make_coordinates(image, line_parameters):
     slope, intercept = line_parameters
@@ -41,7 +41,7 @@ def display_lines(image, lines):
     line_image = np.zeros_like(image)
     if lines is not None:
         for x1, y1, x2, y2 in lines:
-            cv2.line(line_image, (x1, y1), (x2,y2), (255,0,0), 10)
+            cv2.line(image, (x1, y1), (x2,y2), (255,0,0), 10)
 
     return line_image
 
@@ -64,6 +64,10 @@ def region_of_interest(image):
 # cv2.imshow('result', combo_image)
 # cv2.waitKey(0)
 
+reader = imageio.get_reader('test2.mp4')
+fps = reader.get_meta_data()['fps']
+writer = imageio.get_writer('output.mp4', fps = fps)
+
 cap = cv2.VideoCapture("test2.mp4")
 while(cap.isOpened()):
     a,frame = cap.read()
@@ -74,7 +78,9 @@ while(cap.isOpened()):
     line_image = display_lines(frame, averaged_lines)
     combo_image = cv2.addWeighted(frame, 0.8, line_image, 1, 1)
     cv2.imshow('result', combo_image)
+    writer.append_data(combo_image)
     if cv2.waitKey(1) & 0xFF == ord('q'):
+        writer.close()
         break
 cap.release()
 cv2.destroyAllWindows()
